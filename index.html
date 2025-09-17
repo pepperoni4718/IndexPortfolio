@@ -1,790 +1,410 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Index Portfolio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-    <style>
-        /* --- General Styling (Light Theme) --- */
-        :root {
-            --primary-bg: #f4f7f9;
-            --secondary-bg: #ffffff;
-            --card-bg: #ffffff;
-            --primary-text: #0a3d62;
-            --secondary-text: #3c6382;
-            --border-color: #dfe4ea;
-            --shadow-color: rgba(108, 122, 137, 0.15);
-            --accent-color: #0984e3;
-            --positive-color: #2ecc71;
-            --negative-color: #e74c3c;
-        }
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Sarabun', sans-serif;
-        }
+        // NEW: Register the datalabels plugin with Chart.js
+        Chart.register(ChartDataLabels);
 
-        body {
-            background-color: var(--primary-bg);
-            color: var(--secondary-text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* --- Authentication Container --- */
-        #auth-container {
-            background-color: var(--secondary-bg);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px var(--shadow-color);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        #auth-container h2 {
-            color: var(--primary-text);
-            margin-bottom: 25px;
-            font-weight: 700;
-        }
-
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .auth-form input {
-            background: var(--primary-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 15px;
-            color: var(--secondary-text);
-            font-size: 1rem;
-        }
-
-        .auth-form input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
-
-        .auth-form button {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .auth-form button:hover {
-            background-color: #0b97ff;
-        }
-
-        #toggle-link {
-            color: var(--accent-color);
-            text-decoration: none;
-            margin-top: 15px;
-            display: inline-block;
-        }
-        #toggle-link:hover {
-            text-decoration: underline;
-        }
-
-        /* --- Main App Container --- */
-        #app-container {
-            display: none;
-            width: 100%;
-            height: 100vh;
-            background-color: var(--primary-bg);
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        header {
-            background-color: var(--secondary-bg);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 15px var(--shadow-color);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-container img {
-            height: 32px;
-        }
-
-        header h1 {
-            color: var(--primary-text);
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        #logout-btn {
-            background: transparent;
-            border: 1px solid var(--accent-color);
-            color: var(--accent-color);
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        #logout-btn:hover {
-            background-color: var(--accent-color);
-            color: white;
-        }
-        
-        /* --- Tabs --- */
-        .tab-nav {
-            display: flex;
-            background-color: #e9ecef;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 15px;
-            text-align: center;
-            background: transparent;
-            border: none;
-            color: var(--secondary-text);
-            cursor: pointer;
-            font-size: 1rem;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-        .tab-btn.active {
-            color: var(--accent-color);
-            border-bottom-color: var(--accent-color);
-            background-color: var(--primary-bg);
-        }
-
-        /* --- Tab Content --- */
-        .tab-content {
-            padding: 25px;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-        
-        #graph-tab {
-            display: none;
-        }
-
-        /* --- Portfolio Tab Styling --- */
-        #add-stock-form {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            background-color: var(--secondary-bg);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid var(--border-color);
-        }
-        #add-stock-form input {
-            flex: 1;
-            padding: 12px;
-            background-color: var(--primary-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--secondary-text);
-        }
-        #add-stock-form button {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 0 25px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        #portfolio-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: right;
-            background-color: var(--secondary-bg);
-            border-radius: 15px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-        
-        #portfolio-table thead {
-            background-color: #f8f9fa;
-        }
-
-        #portfolio-table th {
-            color: var(--primary-text);
-            font-weight: 500;
-        }
-
-        #portfolio-table th, #portfolio-table td {
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        #portfolio-table th:first-child, #portfolio-table td:first-child {
-            text-align: left;
-        }
-        
-        #portfolio-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-        
-        #portfolio-table tbody tr:hover {
-            background-color: #f1f3f5;
-        }
-        
-        .profit { color: var(--positive-color); }
-        .loss { color: var(--negative-color); }
-        .neutral { color: var(--secondary-text); }
-
-        .portfolio-summary {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: var(--secondary-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            text-align: right;
-            font-size: 1.1rem;
-        }
-        .portfolio-summary p { margin: 5px 0; color: var(--primary-text); }
-        .portfolio-summary span { font-weight: 700; }
-
-        .delete-btn {
-            cursor: pointer;
-            color: #adb5bd;
-            margin-left: 10px;
-            font-size: 0.9em;
-            transition: color 0.2s;
-        }
-        .delete-btn:hover { color: var(--negative-color); }
-
-        /* --- Graph Tab Styling --- */
-        .graph-controls {
-            margin-bottom: 20px;
-        }
-        #stock-selector {
-            padding: 10px;
-            background-color: var(--secondary-bg);
-            border: 1px solid var(--border-color);
-            color: var(--secondary-text);
-            border-radius: 8px;
-            min-width: 150px;
-        }
-        #stock-chart-container {
-            height: calc(100vh - 250px);
-            padding: 20px;
-            background-color: var(--secondary-bg);
-            border-radius: 15px;
-            border: 1px solid var(--border-color);
-        }
-    </style>
-</head>
-<body>
-
-    <div id="auth-container">
-        <form id="login-form" class="auth-form">
-            <h2>เข้าสู่ระบบ</h2>
-            <input type="text" id="login-username" placeholder="ชื่อผู้ใช้" required>
-            <input type="password" id="login-password" placeholder="รหัสผ่าน" required>
-            <button type="submit">ล็อกอิน</button>
-            <a href="#" id="toggle-link">ยังไม่มีบัญชี? สมัครสมาชิก</a>
-        </form>
-        
-        <form id="register-form" class="auth-form" style="display: none;">
-            <h2>สมัครสมาชิก</h2>
-            <input type="text" id="register-username" placeholder="ชื่อผู้ใช้" required>
-            <input type="password" id="register-password" placeholder="รหัสผ่าน" required>
-            <button type="submit">สมัครสมาชิก</button>
-            <a href="#" id="toggle-link-2">มีบัญชีอยู่แล้ว? เข้าสู่ระบบ</a>
-        </form>
-    </div>
-
-
-    <div id="app-container">
-        <header>
-            <div class="logo-container">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230a3d62' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='23 6 13.5 15.5 8.5 10.5 1 18'%3E%3C/polyline%3E%3Cpolyline points='17 6 23 6 23 12'%3E%3C/polyline%3E%3C/svg%3E" alt="Portfolio Icon">
-                <h1>My Index Portfolio</h1>
-            </div>
-            <button id="logout-btn">ออกจากระบบ</button>
-        </header>
-
-        <nav class="tab-nav">
-            <button class="tab-btn active" data-tab="portfolio-tab">พอร์ตฟอลิโอ</button>
-            <button class="tab-btn" data-tab="graph-tab">กราฟ</button>
-        </nav>
-
-        <main class="tab-content">
-            <div id="portfolio-tab">
-                <form id="add-stock-form">
-                    <input type="text" id="stock-symbol-input" placeholder="ชื่อย่อหุ้น (e.g., KBank)" required>
-                    <input type="number" id="stock-quantity-input" placeholder="จำนวนหน่วย" min="1" required>
-                    <button type="submit">เพิ่มหุ้น</button>
-                </form>
-
-                <div class="table-container">
-                    <table id="portfolio-table">
-                        <thead>
-                            <tr>
-                                <th>ชื่อหุ้น</th>
-                                <th>วันที่ซื้อ</th>
-                                <th>จำนวน</th>
-                                <th>ราคาซื้อ/หน่วย</th>
-                                <th>ราคารวม (ซื้อ)</th>
-                                <th>ราคาปัจจุบัน/หน่วย</th>
-                                <th>ราคารวม (ปัจจุบัน)</th>
-                                <th>กำไร/ขาดทุน</th>
-                            </tr>
-                        </thead>
-                        <tbody id="portfolio-body">
-                            </tbody>
-                    </table>
-                </div>
-                <div class="portfolio-summary">
-                    <p>มูลค่าพอร์ตรวม: <span id="total-value"></span></p>
-                    <p>กำไร/ขาดทุนรวม: <span id="total-net" class="neutral"></span></p>
-                </div>
-            </div>
-
-            <div id="graph-tab">
-                <div class="graph-controls">
-                    <label for="stock-selector">เลือกหุ้น: </label>
-                    <select id="stock-selector"></select>
-                </div>
-                <div id="stock-chart-container">
-                    <canvas id="stock-chart"></canvas>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-
-            // --- MOCK PRICE PROVIDER ---
-            const mockPriceProvider = {
-                prices: {
-                    "KBANK": 128.50, "AOT": 62.25, "PTT": 34.75, "SCB": 108.00, "CPALL": 55.50,
-                    "DELTA": 85.25, "ADVANC": 211.00, "GULF": 44.75
-                },
-                fetchRealtimePrices(symbols) {
-                    const newPrices = {};
-                    symbols.forEach(symbol => {
-                        if (this.prices[symbol]) {
-                            const change = (Math.random() - 0.5) * 0.5;
-                            this.prices[symbol] = Math.max(10.0, this.prices[symbol] + change);
-                            newPrices[symbol] = parseFloat(this.prices[symbol].toFixed(2));
-                        } else {
-                            this.prices[symbol] = Math.random() * 200 + 20;
-                            newPrices[symbol] = parseFloat(this.prices[symbol].toFixed(2));
-                        }
-                    });
-                    return newPrices;
-                },
-                fetchHistoricalData(symbol) {
-                    const data = [];
-                    let lastClose = this.prices[symbol] || 100;
-                    for (let i = 6; i >= 0; i--) {
-                        const date = new Date();
-                        date.setDate(date.getDate() - i);
-                        
-                        const open = parseFloat((lastClose * (1 + (Math.random() - 0.5) * 0.05)).toFixed(2));
-                        const close = parseFloat((open * (1 + (Math.random() - 0.5) * 0.05)).toFixed(2));
-                        
-                        data.push({
-                            // UPDATED: Changed date format to AD
-                            date: date.toLocaleDateString('en-GB'),
-                            open: open,
-                            close: close,
-                        });
-                        lastClose = close;
-                    }
-                    return data;
-                }
-            };
-            
-            // --- CLASS DEFINITIONS ---
-            class Stock {
-                constructor(symbol, quantity, buyPrice) {
-                    // UPDATED: Changed date format to AD
-                    this.date = new Date().toLocaleDateString('en-GB');
-                    this.symbol = symbol.toUpperCase();
-                    this.quantity = parseFloat(quantity);
-                    this.buyPrice = parseFloat(buyPrice);
-                    this.totalBuy = this.quantity * this.buyPrice;
-                    this.currentPrice = this.buyPrice;
-                    this.currentTotal = this.totalBuy;
-                    this.net = 0;
-                }
-
-                updatePrice(newPrice) {
-                    this.currentPrice = newPrice;
-                    this.calculateTotal();
-                }
-
-                calculateTotal() {
-                    this.currentTotal = this.currentPrice * this.quantity;
-                    this.net = this.currentTotal - this.totalBuy;
-                }
-            }
-
-            class Portfolio {
-                constructor(name) {
-                    this.name = name;
-                    this.listStock = [];
-                    this.totalValue = 0;
-                    this.totalPort = 0;
-                }
-
-                addStock(stock) {
-                    const existingStock = this.listStock.find(s => s.symbol === stock.symbol);
-                    if (existingStock) {
-                        const newTotalQuantity = existingStock.quantity + stock.quantity;
-                        const newTotalBuy = existingStock.totalBuy + stock.totalBuy;
-                        existingStock.buyPrice = newTotalBuy / newTotalQuantity;
-                        existingStock.quantity = newTotalQuantity;
-                        existingStock.totalBuy = newTotalBuy;
+        // --- MOCK PRICE PROVIDER ---
+        const mockPriceProvider = {
+            prices: {
+                "KBANK": 128.50, "AOT": 62.25, "PTT": 34.75, "SCB": 108.00, "CPALL": 55.50,
+                "DELTA": 85.25, "ADVANC": 211.00, "GULF": 44.75
+            },
+            fetchRealtimePrices(symbols) {
+                const newPrices = {};
+                symbols.forEach(symbol => {
+                    if (this.prices[symbol]) {
+                        const change = (Math.random() - 0.5) * 0.5;
+                        this.prices[symbol] = Math.max(10.0, this.prices[symbol] + change);
+                        newPrices[symbol] = parseFloat(this.prices[symbol].toFixed(2));
                     } else {
-                        this.listStock.push(stock);
+                        this.prices[symbol] = Math.random() * 200 + 20;
+                        newPrices[symbol] = parseFloat(this.prices[symbol].toFixed(2));
                     }
-                    this.calculatePort();
-                }
-                
-                deleteStock(symbol) {
-                    this.listStock = this.listStock.filter(stock => stock.symbol !== symbol);
-                    this.calculatePort();
-                }
-
-                updateAllPrices(allPrices) {
-                    this.listStock.forEach(stock => {
-                        if (allPrices[stock.symbol]) {
-                            stock.updatePrice(allPrices[stock.symbol]);
-                        }
+                });
+                return newPrices;
+            },
+            fetchHistoricalData(symbol) {
+                const data = [];
+                let lastClose = this.prices[symbol] || 100;
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    
+                    const open = parseFloat((lastClose * (1 + (Math.random() - 0.5) * 0.05)).toFixed(2));
+                    const close = parseFloat((open * (1 + (Math.random() - 0.5) * 0.05)).toFixed(2));
+                    
+                    data.push({
+                        date: date.toLocaleDateString('en-GB'),
+                        open: open,
+                        close: close,
                     });
-                    this.calculatePort();
+                    lastClose = close;
                 }
-
-                calculatePort() {
-                    this.totalValue = this.listStock.reduce((sum, stock) => sum + stock.currentTotal, 0);
-                    this.totalPort = this.listStock.reduce((sum, stock) => sum + stock.net, 0);
-                }
+                return data;
+            }
+        };
+        
+        // --- CLASS DEFINITIONS ---
+        class Stock {
+            constructor(symbol, quantity, buyPrice) {
+                this.date = new Date().toLocaleDateString('en-GB');
+                this.symbol = symbol.toUpperCase();
+                this.quantity = parseFloat(quantity);
+                this.buyPrice = parseFloat(buyPrice);
+                this.totalBuy = this.quantity * this.buyPrice;
+                this.currentPrice = this.buyPrice;
+                this.currentTotal = this.totalBuy;
+                this.net = 0;
             }
 
-            class AutoPortfolioManager {
-                constructor(portfolio, priceProvider) {
-                    this.port = portfolio;
-                    this.priceProvider = priceProvider;
-                    this.chartInstance = null;
-                }
+            updatePrice(newPrice) {
+                this.currentPrice = newPrice;
+                this.calculateTotal();
+            }
 
-                startRealtimeUpdates() {
-                    this.updatePortPrices();
-                    setInterval(() => this.updatePortPrices(), 3000);
-                }
+            calculateTotal() {
+                this.currentTotal = this.currentPrice * this.quantity;
+                this.net = this.currentTotal - this.totalBuy;
+            }
+        }
 
-                updatePortPrices() {
-                    const symbols = this.port.listStock.map(s => s.symbol);
-                    if (symbols.length === 0) return;
-                    
-                    const newPrices = this.priceProvider.fetchRealtimePrices(symbols);
-                    this.port.updateAllPrices(newPrices);
-                    this.report();
-                }
+        class Portfolio {
+            constructor(name) {
+                this.name = name;
+                this.listStock = [];
+                this.totalValue = 0;
+                this.totalPort = 0;
+            }
 
-                addStockToPort(symbol, quantity) {
-                    const currentPrice = this.priceProvider.fetchRealtimePrices([symbol.toUpperCase()])[symbol.toUpperCase()];
-                    const newStock = new Stock(symbol, quantity, currentPrice);
-                    this.port.addStock(newStock);
-                    this.report();
-                    this.updateGraphTab();
+            addStock(stock) {
+                const existingStock = this.listStock.find(s => s.symbol === stock.symbol);
+                if (existingStock) {
+                    const newTotalQuantity = existingStock.quantity + stock.quantity;
+                    const newTotalBuy = existingStock.totalBuy + stock.totalBuy;
+                    existingStock.buyPrice = newTotalBuy / newTotalQuantity;
+                    existingStock.quantity = newTotalQuantity;
+                    existingStock.totalBuy = newTotalBuy;
+                } else {
+                    this.listStock.push(stock);
                 }
+                this.calculatePort();
+            }
+            
+            deleteStock(symbol) {
+                this.listStock = this.listStock.filter(stock => stock.symbol !== symbol);
+                this.calculatePort();
+            }
+
+            updateAllPrices(allPrices) {
+                this.listStock.forEach(stock => {
+                    if (allPrices[stock.symbol]) {
+                        stock.updatePrice(allPrices[stock.symbol]);
+                    }
+                });
+                this.calculatePort();
+            }
+
+            calculatePort() {
+                this.totalValue = this.listStock.reduce((sum, stock) => sum + stock.currentTotal, 0);
+                this.totalPort = this.listStock.reduce((sum, stock) => sum + stock.net, 0);
+            }
+        }
+
+        class AutoPortfolioManager {
+            constructor(portfolio, priceProvider) {
+                this.port = portfolio;
+                this.priceProvider = priceProvider;
+                this.chartInstance = null;
+            }
+
+            startRealtimeUpdates() {
+                this.updatePortPrices();
+                setInterval(() => this.updatePortPrices(), 3000);
+            }
+
+            updatePortPrices() {
+                const symbols = this.port.listStock.map(s => s.symbol);
+                if (symbols.length === 0) return;
                 
-                removeStockFromPort(symbol) {
-                    this.port.deleteStock(symbol);
-                    this.report();
-                    this.updateGraphTab();
-                }
+                const newPrices = this.priceProvider.fetchRealtimePrices(symbols);
+                this.port.updateAllPrices(newPrices);
+                this.report();
+            }
 
-                report() {
-                    const portfolioBody = document.getElementById('portfolio-body');
-                    portfolioBody.innerHTML = '';
+            addStockToPort(symbol, quantity) {
+                const currentPrice = this.priceProvider.fetchRealtimePrices([symbol.toUpperCase()])[symbol.toUpperCase()];
+                const newStock = new Stock(symbol, quantity, currentPrice);
+                this.port.addStock(newStock);
+                this.report();
+                this.updateGraphTab();
+            }
+            
+            removeStockFromPort(symbol) {
+                this.port.deleteStock(symbol);
+                this.report();
+                this.updateGraphTab();
+            }
+
+            report() {
+                const portfolioBody = document.getElementById('portfolio-body');
+                portfolioBody.innerHTML = '';
+                
+                this.port.listStock.forEach(stock => {
+                    const row = document.createElement('tr');
+                    const netClass = stock.net > 0 ? 'profit' : stock.net < 0 ? 'loss' : 'neutral';
                     
-                    this.port.listStock.forEach(stock => {
-                        const row = document.createElement('tr');
-                        const netClass = stock.net > 0 ? 'profit' : stock.net < 0 ? 'loss' : 'neutral';
-                        
-                        row.innerHTML = `
-                            <td>
-                                <strong>${stock.symbol}</strong>
-                                <span class="delete-btn" data-symbol="${stock.symbol}">&#10006;</span>
-                            </td>
-                            <td>${stock.date}</td>
-                            <td>${stock.quantity.toLocaleString()}</td>
-                            <td>${stock.buyPrice.toFixed(2)}</td>
-                            <td>${stock.totalBuy.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td>${stock.currentPrice.toFixed(2)}</td>
-                            <td>${stock.currentTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td class="${netClass}">${stock.net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                        `;
-                        portfolioBody.appendChild(row);
-                    });
+                    row.innerHTML = `
+                        <td>
+                            <strong>${stock.symbol}</strong>
+                            <span class="delete-btn" data-symbol="${stock.symbol}">&#10006;</span>
+                        </td>
+                        <td>${stock.date}</td>
+                        <td>${stock.quantity.toLocaleString()}</td>
+                        <td>${stock.buyPrice.toFixed(2)}</td>
+                        <td>${stock.totalBuy.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>${stock.currentPrice.toFixed(2)}</td>
+                        <td>${stock.currentTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="${netClass}">${stock.net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    `;
+                    portfolioBody.appendChild(row);
+                });
 
-                    document.getElementById('total-value').textContent = this.port.totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                    const totalNetEl = document.getElementById('total-net');
-                    totalNetEl.textContent = this.port.totalPort.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                    totalNetEl.className = this.port.totalPort > 0 ? 'profit' : this.port.totalPort < 0 ? 'loss' : 'neutral';
-                }
+                document.getElementById('total-value').textContent = this.port.totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                const totalNetEl = document.getElementById('total-net');
+                totalNetEl.textContent = this.port.totalPort.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                totalNetEl.className = this.port.totalPort > 0 ? 'profit' : this.port.totalPort < 0 ? 'loss' : 'neutral';
+            }
 
-                updateGraphTab() {
-                    const selector = document.getElementById('stock-selector');
-                    const currentSelection = selector.value;
-                    selector.innerHTML = '';
-                    
-                    if (this.port.listStock.length === 0) {
-                        selector.innerHTML = '<option>ไม่มีหุ้นในพอร์ต</option>';
-                        if(this.chartInstance) {
-                            this.chartInstance.destroy();
-                            this.chartInstance = null;
-                        }
-                        return;
-                    }
-
-                    this.port.listStock.forEach(stock => {
-                        const option = document.createElement('option');
-                        option.value = stock.symbol;
-                        option.textContent = stock.symbol;
-                        selector.appendChild(option);
-                    });
-
-                    if (currentSelection && this.port.listStock.some(s => s.symbol === currentSelection)) {
-                        selector.value = currentSelection;
-                    }
-
-                    this.generateGraph(selector.value);
-                }
-
-                generateGraph(symbol) {
-                    if (!symbol) return;
-
-                    const historicalData = this.priceProvider.fetchHistoricalData(symbol);
-                    const labels = historicalData.map(d => d.date);
-                    const closePrices = historicalData.map(d => d.close);
-                    const pointColors = historicalData.map(d => d.close >= d.open ? '#2ecc71' : '#e74c3c');
-
-                    const ctx = document.getElementById('stock-chart').getContext('2d');
-                    if (this.chartInstance) {
+            updateGraphTab() {
+                const selector = document.getElementById('stock-selector');
+                const currentSelection = selector.value;
+                selector.innerHTML = '';
+                
+                if (this.port.listStock.length === 0) {
+                    selector.innerHTML = '<option>ไม่มีหุ้นในพอร์ต</option>';
+                    if(this.chartInstance) {
                         this.chartInstance.destroy();
+                        this.chartInstance = null;
                     }
+                    return;
+                }
 
-                    this.chartInstance = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: `ราคาปิดของ ${symbol}`,
-                                data: closePrices,
-                                borderColor: '#0984e3',
-                                backgroundColor: 'rgba(9, 132, 227, 0.1)',
-                                borderWidth: 2.5,
-                                pointBackgroundColor: pointColors,
-                                pointBorderColor: '#fff',
-                                pointBorderWidth: 2,
-                                pointRadius: 6,
-                                pointHoverRadius: 9,
-                                fill: true,
-                                tension: 0.2
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: {
-                                    ticks: { color: '#3c6382' },
-                                    grid: { color: 'rgba(0,0,0,0.05)'}
-                                },
-                                x: {
-                                    ticks: { color: '#3c6382' },
-                                    grid: { color: 'rgba(0,0,0,0.05)'}
-                                }
+                this.port.listStock.forEach(stock => {
+                    const option = document.createElement('option');
+                    option.value = stock.symbol;
+                    option.textContent = stock.symbol;
+                    selector.appendChild(option);
+                });
+
+                if (currentSelection && this.port.listStock.some(s => s.symbol === currentSelection)) {
+                    selector.value = currentSelection;
+                }
+
+                this.generateGraph(selector.value);
+            }
+
+            generateGraph(symbol) {
+                if (!symbol) return;
+
+                const historicalData = this.priceProvider.fetchHistoricalData(symbol);
+                const labels = historicalData.map(d => d.date);
+                const closePrices = historicalData.map(d => d.close);
+                const pointColors = historicalData.map(d => d.close >= d.open ? '#2ecc71' : '#e74c3c');
+
+                const ctx = document.getElementById('stock-chart').getContext('2d');
+                if (this.chartInstance) {
+                    this.chartInstance.destroy();
+                }
+
+                this.chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `ราคาปิดของ ${symbol}`,
+                            data: closePrices,
+                            borderColor: '#0984e3',
+                            backgroundColor: 'rgba(9, 132, 227, 0.1)',
+                            borderWidth: 2.5,
+                            pointBackgroundColor: pointColors,
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 9,
+                            fill: true,
+                            tension: 0.2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                ticks: { color: '#3c6382' },
+                                grid: { color: 'rgba(0,0,0,0.05)'}
                             },
-                            plugins: {
-                                legend: {
-                                    labels: { color: '#0a3d62' }
+                            x: {
+                                ticks: { color: '#3c6382' },
+                                grid: { color: 'rgba(0,0,0,0.05)'}
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: { color: '#0a3d62' }
+                            },
+                            tooltip: {
+                                enabled: true
+                            },
+                            datalabels: {
+                                align: 'top',
+                                anchor: 'end',
+                                offset: 8,
+                                backgroundColor: (context) => {
+                                    const data = historicalData[context.dataIndex];
+                                    return data.close >= data.open ? 'rgba(46, 204, 113, 0.8)' : 'rgba(231, 76, 60, 0.8)';
                                 },
-                                tooltip: {
-                                    enabled: true // Keep tooltip enabled for hover
+                                borderRadius: 4,
+                                color: 'white',
+                                font: {
+                                    size: 9,
+                                    weight: 'bold'
                                 },
-                                // NEW: Datalabels configuration
-                                datalabels: {
-                                    align: 'top',
-                                    anchor: 'end',
-                                    offset: 8,
-                                    backgroundColor: (context) => {
-                                        const data = historicalData[context.dataIndex];
-                                        return data.close >= data.open ? 'rgba(46, 204, 113, 0.8)' : 'rgba(231, 76, 60, 0.8)';
-                                    },
-                                    borderRadius: 4,
-                                    color: 'white',
-                                    font: {
-                                        size: 9,
-                                        weight: 'bold'
-                                    },
-                                    padding: 4,
-                                    formatter: (value, context) => {
-                                        const data = historicalData[context.dataIndex];
-                                        return `เปิด: ${data.open.toFixed(2)}\nปิด: ${data.close.toFixed(2)}`;
-                                    }
+                                padding: 4,
+                                formatter: (value, context) => {
+                                    const data = historicalData[context.dataIndex];
+                                    return `เปิด: ${data.open.toFixed(2)}\nปิด: ${data.close.toFixed(2)}`;
                                 }
                             }
                         }
-                    });
-                }
-            }
-
-            // --- GLOBAL VARIABLES & UI REFERENCES ---
-            let manager;
-            const authContainer = document.getElementById('auth-container');
-            const appContainer = document.getElementById('app-container');
-            const loginForm = document.getElementById('login-form');
-            const registerForm = document.getElementById('register-form');
-            const toggleLink = document.getElementById('toggle-link');
-            const toggleLink2 = document.getElementById('toggle-link-2');
-
-            // --- AUTHENTICATION LOGIC ---
-            const switchForm = (showLogin) => {
-                loginForm.style.display = showLogin ? 'flex' : 'none';
-                registerForm.style.display = showLogin ? 'none' : 'flex';
-            };
-            
-            toggleLink.addEventListener('click', (e) => { e.preventDefault(); switchForm(false); });
-            toggleLink2.addEventListener('click', (e) => { e.preventDefault(); switchForm(true); });
-
-            registerForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const username = document.getElementById('register-username').value;
-                const password = document.getElementById('register-password').value;
-                const users = JSON.parse(localStorage.getItem('stock_users')) || {};
-                if(users[username]){
-                    alert('ชื่อผู้ใช้นี้มีอยู่แล้ว');
-                } else {
-                    users[username] = { password: password, portfolio: { name: username, listStock: [] } };
-                    localStorage.setItem('stock_users', JSON.stringify(users));
-                    alert('สมัครสมาชิกสำเร็จ! กรุณาล็อกอิน');
-                    switchForm(true);
-                }
-            });
-
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const username = document.getElementById('login-username').value;
-                const password = document.getElementById('login-password').value;
-                const users = JSON.parse(localStorage.getItem('stock_users')) || {};
-                if (users[username] && users[username].password === password) {
-                    sessionStorage.setItem('currentUser', username);
-                    initializeApp(username);
-                } else {
-                    alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
-                }
-            });
-
-            document.getElementById('logout-btn').addEventListener('click', () => {
-                const currentUser = sessionStorage.getItem('currentUser');
-                if (currentUser && manager) {
-                    const users = JSON.parse(localStorage.getItem('stock_users')) || {};
-                    if(users[currentUser]){
-                        users[currentUser].portfolio = {
-                            name: manager.port.name,
-                            listStock: manager.port.listStock.map(stock => ({...stock}))
-                        };
-                        localStorage.setItem('stock_users', JSON.stringify(users));
-                    }
-                }
-                sessionStorage.removeItem('currentUser');
-                location.reload();
-            });
-
-            // --- INITIALIZATION ---
-            function initializeApp(username) {
-                authContainer.style.display = 'none';
-                appContainer.style.display = 'flex';
-                const users = JSON.parse(localStorage.getItem('stock_users'));
-                const userData = users[username];
-                const myPortfolio = new Portfolio(username);
-                if (userData.portfolio && userData.portfolio.listStock) {
-                    myPortfolio.listStock = userData.portfolio.listStock.map(plainStock => {
-                        const stock = new Stock(plainStock.symbol, plainStock.quantity, plainStock.buyPrice);
-                        stock.date = plainStock.date;
-                        return stock;
-                    });
-                }
-                manager = new AutoPortfolioManager(myPortfolio, mockPriceProvider);
-                manager.startRealtimeUpdates();
-                manager.updateGraphTab();
-            }
-
-            const currentUser = sessionStorage.getItem('currentUser');
-            if (currentUser) {
-                initializeApp(currentUser);
-            }
-
-            // --- APP EVENT LISTENERS ---
-            document.querySelectorAll('.tab-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    document.querySelectorAll('.tab-content > div').forEach(tab => {
-                        tab.style.display = 'none';
-                    });
-                    const tabId = button.getAttribute('data-tab');
-                    document.getElementById(tabId).style.display = 'block';
-                    if (tabId === 'graph-tab') {
-                        manager.updateGraphTab();
                     }
                 });
-            });
+            }
+        }
 
-            document.getElementById('add-stock-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const symbol = document.getElementById('stock-symbol-input').value;
-                const quantity = document.getElementById('stock-quantity-input').value;
-                if (symbol && quantity > 0) {
-                    manager.addStockToPort(symbol, quantity);
-                    document.getElementById('add-stock-form').reset();
+        // --- GLOBAL VARIABLES & UI REFERENCES ---
+        let manager;
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const toggleLink = document.getElementById('toggle-link');
+        const toggleLink2 = document.getElementById('toggle-link-2');
+
+        // --- AUTHENTICATION LOGIC ---
+        const switchForm = (showLogin) => {
+            loginForm.style.display = showLogin ? 'flex' : 'none';
+            registerForm.style.display = showLogin ? 'none' : 'flex';
+        };
+        
+        toggleLink.addEventListener('click', (e) => { e.preventDefault(); switchForm(false); });
+        toggleLink2.addEventListener('click', (e) => { e.preventDefault(); switchForm(true); });
+
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const users = JSON.parse(localStorage.getItem('stock_users')) || {};
+            if(users[username]){
+                alert('ชื่อผู้ใช้นี้มีอยู่แล้ว');
+            } else {
+                users[username] = { password: password, portfolio: { name: username, listStock: [] } };
+                localStorage.setItem('stock_users', JSON.stringify(users));
+                alert('สมัครสมาชิกสำเร็จ! กรุณาล็อกอิน');
+                switchForm(true);
+            }
+        });
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const users = JSON.parse(localStorage.getItem('stock_users')) || {};
+            if (users[username] && users[username].password === password) {
+                sessionStorage.setItem('currentUser', username);
+                initializeApp(username);
+            } else {
+                alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            const currentUser = sessionStorage.getItem('currentUser');
+            if (currentUser && manager) {
+                const users = JSON.parse(localStorage.getItem('stock_users')) || {};
+                if(users[currentUser]){
+                    users[currentUser].portfolio = {
+                        name: manager.port.name,
+                        listStock: manager.port.listStock.map(stock => ({...stock}))
+                    };
+                    localStorage.setItem('stock_users', JSON.stringify(users));
                 }
-            });
+            }
+            sessionStorage.removeItem('currentUser');
+            location.reload();
+        });
 
-            document.getElementById('stock-selector').addEventListener('change', (e) => {
-                manager.generateGraph(e.target.value);
-            });
-            
-            document.getElementById('portfolio-body').addEventListener('click', (e) => {
-                if (e.target && e.target.classList.contains('delete-btn')) {
-                    const symbolToDelete = e.target.getAttribute('data-symbol');
-                    if (confirm(`คุณต้องการลบหุ้น ${symbolToDelete} ออกจากพอร์ตใช่หรือไม่?`)) {
-                        manager.removeStockFromPort(symbolToDelete);
-                    }
+        // --- INITIALIZATION ---
+        function initializeApp(username) {
+            authContainer.style.display = 'none';
+            appContainer.style.display = 'flex';
+            const users = JSON.parse(localStorage.getItem('stock_users'));
+            const userData = users[username];
+            const myPortfolio = new Portfolio(username);
+            if (userData.portfolio && userData.portfolio.listStock) {
+                myPortfolio.listStock = userData.portfolio.listStock.map(plainStock => {
+                    const stock = new Stock(plainStock.symbol, plainStock.quantity, plainStock.buyPrice);
+                    stock.date = plainStock.date;
+                    return stock;
+                });
+            }
+            manager = new AutoPortfolioManager(myPortfolio, mockPriceProvider);
+            manager.startRealtimeUpdates();
+            manager.updateGraphTab();
+        }
+
+        const currentUser = sessionStorage.getItem('currentUser');
+        if (currentUser) {
+            initializeApp(currentUser);
+        }
+
+        // --- APP EVENT LISTENERS ---
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                document.querySelectorAll('.tab-content > div').forEach(tab => {
+                    tab.style.display = 'none';
+                });
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(tabId).style.display = 'block';
+                if (tabId === 'graph-tab') {
+                    manager.updateGraphTab();
                 }
             });
         });
-    </script>
-</body>
-</html>
+
+        document.getElementById('add-stock-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const symbol = document.getElementById('stock-symbol-input').value;
+            const quantity = document.getElementById('stock-quantity-input').value;
+            if (symbol && quantity > 0) {
+                manager.addStockToPort(symbol, quantity);
+                document.getElementById('add-stock-form').reset();
+            }
+        });
+
+        document.getElementById('stock-selector').addEventListener('change', (e) => {
+            manager.generateGraph(e.target.value);
+        });
+        
+        document.getElementById('portfolio-body').addEventListener('click', (e) => {
+            if (e.target && e.target.classList.contains('delete-btn')) {
+                const symbolToDelete = e.target.getAttribute('data-symbol');
+                if (confirm(`คุณต้องการลบหุ้น ${symbolToDelete} ออกจากพอร์ตใช่หรือไม่?`)) {
+                    manager.removeStockFromPort(symbolToDelete);
+                }
+            }
+        });
+    });
+</script>
